@@ -3,9 +3,9 @@
 
 ## Información del Estudiante
 
-- **Nombre:** [Tu nombre completo aquí]
-- **Carrera:** [Tu carrera]
-- **Fecha de inicio:** [Fecha]
+- **Nombre:** Cristopher Vallejo
+- **Carrera:** Ingenieria en Software 
+- **Fecha de inicio:** 03-12-2025
 
 ---
 
