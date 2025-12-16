@@ -5,7 +5,7 @@
 
 - **Nombre:** Cristopher Vallejo
 - **Carrera:** Ingenieria en Software 
-- **Fecha de inicio:** 03-12-2025
+- **Fecha de inicio:** 16-12-2025
 
 ---
 

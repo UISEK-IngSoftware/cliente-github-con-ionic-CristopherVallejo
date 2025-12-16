@@ -1,33 +1,45 @@
-import {IonContent,IonHeader,IonPage,IonTitle,IonToolbar,IonCard,IonCardContent,IonCardHeader,IonCardSubtitle,IonCardTitle,
+import React from 'react';
+import {IonContent,IonHeader,IonPage,IonTitle,IonToolbar, IonList, useIonViewDidEnter,
 }from '@ionic/react';
-import ExploreContainer from '../components/ExploreContainer';
 import './Tab1.css';
+import RepoItem from '../components/Repoitem';
+import { RepositoryItem } from '../interfaces/RepositoryItem';
+import { fetchRepositories } from '../services/GithubService';
 
 const Tab1: React.FC = () => {
+const[repos,setRepos]=React.useState<RepositoryItem[]>([]);
+const loadRepos= async()=>{
+  const repoData:RepositoryItem[] = await fetchRepositories();
+  setRepos(repoData);
+}
+
+useIonViewDidEnter(()=>{
+  console.log('*********Cargando repositorios**********');
+  loadRepos();
+})
+
+
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Tab 1</IonTitle>
+          <IonTitle>Repositorios</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
         <IonHeader collapse="condense">
           <IonToolbar>
-            <IonTitle size="large">Tab 1</IonTitle>
+            <IonTitle size="large">Repositorios</IonTitle>
           </IonToolbar>
         </IonHeader>
-         <IonCard>
-        <img alt="Silhouette of mountains" src="https://ionicframework.com/docs/img/demos/card-media.png" />
-        <IonCardHeader>
-          <IonCardTitle>Cristopher Vallejo</IonCardTitle>
-          <IonCardSubtitle>Desarrollo Móvil</IonCardSubtitle>
-        </IonCardHeader>
+         <IonList>
+          {repos.map((repo,index)=>(
+            <RepoItem key={index} repo={repo} />
+          ))}
 
-      <IonCardContent>
-        El framework Ionic permite crear aplicaciones móviles y de escritorio utilizando tecnologías web como HTML, CSS y JavaScript, facilitando el desarrollo multiplataforma con una sola base de código.
-      </IonCardContent>
-    </IonCard>
+
+         </IonList>
+    
       </IonContent>
     </IonPage>
   );
