@@ -1,39 +1,41 @@
-import { IonButton, IonContent, IonHeader, IonInput, IonPage, IonTextarea, IonTitle, IonToolbar } from '@ionic/react';
+import { IonButton, IonContent, IonHeader, IonInput, IonPage, IonTextarea, IonTitle, IonToolbar, IonLoading } from '@ionic/react';
 import { useHistory } from 'react-router';
 import { RepositoryItem } from '../interfaces/RepositoryItem';
 import './Tab2.css';
 import { createRepository } from '../services/GithubService';
+import { useState } from 'react';
 
 const Tab2: React.FC = () => {
-  const history= useHistory();
-  const repoFormData:RepositoryItem={
-    name: '',
-    description: '',
-    imageUrl: null,
-    owner: null,
-    lenguaje: null,
-  };
-  const setRepoName=(value:string)=>{
-    repoFormData.name=value;
-  }
-  
-  const setDescription=(value:string)=>{
-    repoFormData.description=value;
-  }
+  const history = useHistory();
+  const [repoName, setRepoName] = useState('');
+  const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const saveRepo=()=>{
-    console.log('Guardando repositorio:', repoFormData);
-    if(repoFormData.name.trim() === ''){
-      alert('El nombre del repositorio es obligatorio.');
+  const saveRepo = async () => {
+    setError(null);
+    if (repoName.trim() === '') {
+      setError('El nombre del repositorio es obligatorio.');
       return;
     }
-    createRepository(repoFormData).then(()=>{
+    setLoading(true);
+    try {
+      const repo: RepositoryItem = {
+        name: repoName,
+        description: description,
+        imageUrl: null,
+        owner: null,
+        language: null,
+      };
+      await createRepository(repo);
       alert('Repositorio creado exitosamente.');
       history.push('/tab1');
-    }).catch((error)=>{
-      console.error('Error al crear el repositorio:', error);
-      alert('Error al crear el repositorio. Por favor, intente de nuevo.');
-    });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+      setError(`Error al crear el repositorio: ${errorMessage}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -51,11 +53,12 @@ const Tab2: React.FC = () => {
         </IonHeader>
 
         <div className='form-container'>
+          {error && <p style={{ color: 'red' }}>{error}</p>}
           <IonInput label="Nombre del repositorio" 
           labelPlacement="floating" 
           fill="outline" 
           placeholder="repositorio-de-ejemplo" 
-          value={repoFormData.name}
+          value={repoName}
           onIonChange={e => setRepoName(e.detail.value!)}
           ></IonInput>
           <br />
@@ -65,10 +68,11 @@ const Tab2: React.FC = () => {
           labelPlacement="floating"
           fill="outline"
           placeholder="Descripción del repositorio"
-          value={repoFormData.description}
+          value={description}
           onIonChange={e => setDescription(e.detail.value!)}
           rows={6} ></IonTextarea>
           <IonButton expand="block"className='form-field'onClick={saveRepo}>Guardar</IonButton>
+          <IonLoading isOpen={loading} message="Creando repositorio..." />
         </div>
          
       </IonContent>

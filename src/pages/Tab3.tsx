@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import {IonContent,IonHeader,IonPage,IonTitle,IonToolbar,IonCard,IonCardContent,IonCardHeader,IonCardSubtitle,IonCardTitle, useIonViewDidEnter, IonButton, IonIcon,
+import {IonContent,IonHeader,IonPage,IonTitle,IonToolbar,IonCard,IonCardContent,IonCardHeader,IonCardSubtitle,IonCardTitle, useIonViewDidEnter, IonButton, IonIcon, IonLoading,
 }from '@ionic/react';
 import { getUserInfo } from '../services/GithubService';
 import './Tab3.css';
@@ -7,12 +7,10 @@ import { useHistory } from 'react-router';
 import AuthService from '../services/AuthService';
 import { logOutOutline } from 'ionicons/icons';
 
-
-
-
 const Tab3: React.FC = () => {
   const history = useHistory();
-
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [userInfo, setUserInfo] = useState({
      name: 'No se ha cargar el usuario',
@@ -22,22 +20,30 @@ const Tab3: React.FC = () => {
   });
 
 const loadUserInfo = async () => {
-   const response = await getUserInfo();
-   if(response){
-    setUserInfo({
-      name: response.name,
-      username: response.login,
-      bio: response.bio,
-      avatar_url: response.avatar_url,
-    });
-   }
+  setLoading(true);
+  setError(null);
+  try {
+    const response = await getUserInfo();
+    if(response){
+      setUserInfo({
+        name: response.name,
+        username: response.login,
+        bio: response.bio,
+        avatar_url: response.avatar_url,
+      });
+    }
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+    setError(`Error al cargar información del usuario: ${errorMessage}`);
+  } finally {
+    setLoading(false);
+  }
 }
 
 const handleLogout = () => {
     AuthService.logout();
     history.replace('/login');
 }
-
 
 useIonViewDidEnter(() => {
     loadUserInfo();
@@ -56,6 +62,7 @@ useIonViewDidEnter(() => {
             <IonTitle size="large">Perfil de usuario</IonTitle>
           </IonToolbar>
         </IonHeader>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
          <IonCard>
         <img 
           alt="Cristopher Vallejo Amagua" 
@@ -70,7 +77,7 @@ useIonViewDidEnter(() => {
             <IonIcon slot="start" icon={logOutOutline}/>
             Cerrar sesión
           </IonButton>
-
+          <IonLoading isOpen={loading} message="Cargando..." />
       </IonContent>
     </IonPage>
   );

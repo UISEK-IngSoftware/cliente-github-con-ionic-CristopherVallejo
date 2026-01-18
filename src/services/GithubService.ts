@@ -4,7 +4,7 @@ import { UserInfo } from "../interfaces/UserInfo";
 import AuthService from "./AuthService";
 
 const GITHUB_API_URL = import.meta.env.VITE_GITHUB_API_URL;
-//const GITHUB_API_TOKEN = `Bearer ${import.meta.env.VITE_GITHUB_API_TOKEN}`;
+//const GITHUB_API_TOKEN = import.meta.env.VITE_GITHUB_API_TOKEN;
 
 const githubApi= axios.create({
     baseURL: GITHUB_API_URL,
@@ -70,4 +70,28 @@ export const getUserInfo = async (): Promise<UserInfo | null> => {
         console.error("Error fetching user info:", error);
         return null;
     } 
+};
+
+// Nota: GitHub usa PATCH para editar el nombre o descripción
+export const updateRepository = async (owner: string, repoName: string, newName: string, newDescription: string): Promise<void> => {
+    try {
+        await githubApi.patch(`/repos/${owner}/${repoName}`, {
+            name: newName,
+            description: newDescription
+        });
+        console.log("Repositorio actualizado");
+    } catch (error) {
+        console.error("Error al actualizar:", error);
+        throw error;
+    }
+};
+
+export const deleteRepository = async (owner: string, repoName: string): Promise<void> => {
+    try {
+        await githubApi.delete(`/repos/${owner}/${repoName}`);
+        console.log("Repositorio eliminado");
+    } catch (error) {
+        console.error("Error al eliminar:", error);
+        throw error;
+    }
 };
