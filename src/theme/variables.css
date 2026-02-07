@@ -1,2 +1,7 @@
 /* For information on how to create your own theme, please refer to:
 http://ionicframework.com/docs/theming/ */
+
+:root{
+  --ion-color-primary: #7010ec;
+  --ion-color-primary-rgb: #e7e7f0;
+}

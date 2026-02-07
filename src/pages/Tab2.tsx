@@ -1,38 +1,33 @@
-import { IonButton, IonContent, IonHeader, IonInput, IonPage, IonTextarea, IonTitle, IonToolbar, IonLoading } from '@ionic/react';
+import React, { useState } from 'react';
+import { IonButton, IonContent, IonHeader, IonInput, IonPage, IonTextarea, IonTitle, IonToolbar, useIonToast } from '@ionic/react';
 import { useHistory } from 'react-router';
-import { RepositoryItem } from '../interfaces/RepositoryItem';
-import './Tab2.css';
 import { createRepository } from '../services/GithubService';
-import { useState } from 'react';
+import LoadingSpinner from '../components/loadingSpinner';
+import './Tab2.css';
 
 const Tab2: React.FC = () => {
-  const history = useHistory();
-  const [repoName, setRepoName] = useState('');
+  const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const history = useHistory();
+  const [present] = useIonToast();
 
   const saveRepo = async () => {
-    setError(null);
-    if (repoName.trim() === '') {
-      setError('El nombre del repositorio es obligatorio.');
+    if (!name.trim()) {
+      present({ message: 'El nombre es obligatorio', duration: 2000, color: 'warning' });
       return;
     }
+
     setLoading(true);
     try {
-      const repo: RepositoryItem = {
-        name: repoName,
-        description: description,
-        imageUrl: null,
-        owner: null,
-        language: null,
-      };
-      await createRepository(repo);
-      alert('Repositorio creado exitosamente.');
+      await createRepository({ name, description });
+      present({ message: '¡Repositorio creado!', duration: 2000, color: 'success' });
+      setName('');
+      setDescription('');
       history.push('/tab1');
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
-      setError(`Error al crear el repositorio: ${errorMessage}`);
+    } catch (error) {
+      console.error('Error al crear repositorio:', error);
+      present({ message: 'Error al crear repositorio', duration: 2000, color: 'danger' });
     } finally {
       setLoading(false);
     }
@@ -40,41 +35,23 @@ const Tab2: React.FC = () => {
 
   return (
     <IonPage>
+      <LoadingSpinner isOpen={loading} />
       <IonHeader>
-        <IonToolbar>
-          <IonTitle>Formulario de repositorio</IonTitle>
-        </IonToolbar>
+        <IonToolbar><IonTitle>Nuevo Repositorio</IonTitle></IonToolbar>
       </IonHeader>
-      <IonContent fullscreen>
-        <IonHeader collapse="condense">
-          <IonToolbar>
-            <IonTitle size="large">Formulario de repositorio</IonTitle>
-          </IonToolbar>
-        </IonHeader>
-
+      <IonContent className="ion-padding">
         <div className='form-container'>
-          {error && <p style={{ color: 'red' }}>{error}</p>}
-          <IonInput label="Nombre del repositorio" 
-          labelPlacement="floating" 
-          fill="outline" 
-          placeholder="repositorio-de-ejemplo" 
-          value={repoName}
-          onIonChange={e => setRepoName(e.detail.value!)}
-          ></IonInput>
-          <br />
+          <IonInput 
+            label="Nombre" labelPlacement="floating" fill="outline" 
+            value={name} onIonInput={e => setName(e.detail.value!)} 
+          />
           <IonTextarea 
-          className='form-field'
-          label="Descripción del repositorio"
-          labelPlacement="floating"
-          fill="outline"
-          placeholder="Descripción del repositorio"
-          value={description}
-          onIonChange={e => setDescription(e.detail.value!)}
-          rows={6} ></IonTextarea>
-          <IonButton expand="block"className='form-field'onClick={saveRepo}>Guardar</IonButton>
-          <IonLoading isOpen={loading} message="Creando repositorio..." />
+            label="Descripción" labelPlacement="floating" fill="outline" 
+            value={description} onIonInput={e => setDescription(e.detail.value!)} 
+            rows={4}
+          />
+          <IonButton expand="block" onClick={saveRepo}>Crear Repositorio</IonButton>
         </div>
-         
       </IonContent>
     </IonPage>
   );

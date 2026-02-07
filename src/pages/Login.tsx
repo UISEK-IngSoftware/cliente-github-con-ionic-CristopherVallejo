@@ -3,6 +3,8 @@ import "./Login.css";
 import { logoGithub } from "ionicons/icons";
 import { useState } from "react";
 import AuthService from "../services/AuthService";
+import { getUserInfo } from '../services/GithubService';
+import { useHistory } from 'react-router-dom';
 
 
 
@@ -12,7 +14,14 @@ const Login:React.FC = () => {
     const [token, setToken] =  useState('');
     const [error, setError] = useState('');
 
-    const handleLogin = (e: React.FormEvent) => {
+    const history = useHistory();
+
+    // Redirect if already authenticated
+    if (AuthService.isAuthenticated()) {
+        history.replace('/tab1');
+    }
+
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
 
@@ -21,10 +30,24 @@ const Login:React.FC = () => {
             return;
         }
         const success = AuthService.login(userName, token);
-        if (success) {
-            window.location.href = '/tab1';
-        }else{
-            setError('Error al iniciar sesión.');
+        if (!success) {
+            setError('Error al guardar credenciales.');
+            return;
+        }
+
+        // Validate credentials by requesting /user
+        try {
+            const user = await getUserInfo();
+            if (user && user.login) {
+                history.replace('/tab1');
+                return;
+            } else {
+                AuthService.logout();
+                setError('Credenciales inválidas. Verifica tu token.');
+            }
+        } catch (err) {
+            AuthService.logout();
+            setError('No se pudo validar el token.');
         }
 
     };

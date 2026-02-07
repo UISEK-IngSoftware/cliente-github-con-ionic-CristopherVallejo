@@ -46,16 +46,27 @@ import '@ionic/react/css/palettes/dark.system.css';
 import './theme/variables.css';
 import AuthService from './services/AuthService';
 import Login from './pages/Login';
+import { useEffect, useState } from 'react';
+import LoadingService from './services/LoadingService';
+import LoadingSpinner from './components/loadingSpinner';
 
 setupIonicReact();
 
 const App: React.FC = () => {
 
+
   const isAuthenticated = AuthService.isAuthenticated();
+  const [globalLoading, setGlobalLoading] = useState(false);
+
+  useEffect(() => {
+    const unsub = LoadingService.subscribe((v) => setGlobalLoading(v));
+    return () => unsub();
+  }, []);
 
 
   return (
     <IonApp>
+      <LoadingSpinner isOpen={globalLoading} />
       <IonReactRouter>
         <IonRouterOutlet>
           <Route exact path="/login">
